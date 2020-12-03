@@ -1,4 +1,4 @@
-# Create as many directories as you need for the git folders
+# Create as many directories as you need for the git folders (2 minimum)
 declare -a directories=(
   ".gitone" 
   ".gittwo" 
@@ -6,7 +6,7 @@ declare -a directories=(
 )
 
 # The size limit of one repository before using another in bytes
-sizelimit=96636714682
+sizelimit=96636714682 # 90GB
 
 # Get number of repositories
 repositories=${#directories[@]}
@@ -29,17 +29,30 @@ do
   fi
 done
 
-# Find repository to upload to
+# Find repository to upload new files to
 for (( i=1; i<${repositories}+1; i++ ));
 do
-  if [ $(du -s ${directories[$i-1]} | cut -f1) -lt $sizelimit ]; then
-    repository=${directories[$i-1]}
-    break
+  # Check if the repository is empty
+  if [ $(git --git-dir=${directories[$i-1]} count-objects | cut -d" " -f1) -eq 0 ]; then
+    # If it's the first repository set it as the location to push to
+    if [ i=1 ]; then
+      repository=${directories[$i-1]}
+      break
+    # if the previous repository is less than the maximum size set it as the location
+    elif [ $(du -s ${directories[$i-2]} | cut -f1) -lt $sizelimit ]; then
+      repository=${directories[$i-2]}
+      break
+    fi
   fi
 done
+# Check if the last repository is less than the maximum size
 if [ -z "$repository" ]; then
-  echo "All repositories are full"
-  exit 1
+  if [ $(du -s ${directories[${repositories}-1]} | cut -f1) -lt $sizelimit ]; then
+      repository=${directories[${repositories}-1]}
+      break
+  else
+    echo "All repositories are full"
+    exit 1
+  fi
 fi
 echo Saving files to $repository
-
