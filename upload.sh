@@ -1,3 +1,4 @@
+#!/bin/bash
 # Create as many directories as you need for the git folders (2 minimum)
 declare -a directories=(
   ".gitone" 
@@ -18,7 +19,7 @@ do
     echo -n "Directory ${directories[$i-1]} DOES NOT exist. Create repository? (Y/n) "
     read answer
     if [ "$answer" != "${answer#[Yy]}" ] ;then
-      tmp_dir=$(mktemp -d -t ci-XXXXXXXXXX)
+      tmp_dir=$(mktemp -d)
       git init $tmp_dir
       mv $tmp_dir/.git ${directories[$i-1]}
       git --git-dir=${directories[$i-1]} checkout -b master
@@ -37,10 +38,12 @@ do
     # If the first repository is empty set it as the location to push to
     if [ i=1 ]; then
       repository=${directories[$i-1]}
+      reponum=$(($i-1))
       break
     # if the previous repository is less than the maximum size set it as the location
     elif [ $(du -s ${directories[$i-2]} | cut -f1) -lt $sizelimit ]; then
       repository=${directories[$i-2]}
+      reponum=$(($i-2))
       break
     fi
   fi
@@ -49,6 +52,7 @@ done
 if [ -z "$repository" ]; then
   if [ $(du -s ${directories[${repositories}-1]} | cut -f1) -lt $sizelimit ]; then
     repository=${directories[${repositories}-1]}
+    reponum=$(($i-1))
     break
   else
     # Exit if all repositories are full
@@ -56,17 +60,38 @@ if [ -z "$repository" ]; then
     exit 1
   fi
 fi
-echo Saving files to $repository
+echo Saving new files to $repository
 
-# Upload modified files for existing repositories
+# Upload modified/deleted files for existing repositories
 for (( i=1; i<${repositories}+1; i++ ));
 do
   temp_file=$(mktemp)
-  for file in $(git ls-files --modified --exclude-standard)
+  for file in $(git --git-dir=${directories[$i-1]} ls-files --modified --exclude-standard)
   do
-    git add $file
-    git commit -m "$file"
-    git push -u origin master
+    git --git-dir=${directories[$i-1]} add $file
+    git --git-dir=${directories[$i-1]} commit -m "$file"
+    git --git-dir=${directories[$i-1]} push -u origin master
   done
 done
 
+# Get the intersection of untracked files from all previous repositories
+# These are the files that are not tracked by any repository to avoid duplicates
+if [ $reponum -eq 0 ]; then
+  intersection=$(git --git-dir=${directories[0]} ls-files --other --exclude-standard)
+elif [ $reponum -eq 1 ]; then
+  intersection=$(comm -12 <(git --git-dir=${directories[0]} ls-files --other --exclude-standard) <(git --git-dir=${directories[1]} ls-files --other --exclude-standard))
+else
+  intersection=$(comm -12 <(git --git-dir=${directories[0]} ls-files --other --exclude-standard) <(git --git-dir=${directories[1]} ls-files --other --exclude-standard))
+  for (( i=2; i<${reponum}; i++ ));
+  do
+    intersection=$(comm -12<(echo -e "$intersection") <(git --git-dir=${directories[i]} ls-files --other --exclude-standard))
+  done
+fi
+
+# Upload the files to the previously determined destination
+for file in $(echo -e "$intersection")
+do
+  git --git-dir=$repository add $file
+  git --git-dir=$repository commit -m "$file"
+  git --git-dir=$repository push -u origin master
+done
