@@ -79,12 +79,12 @@ done
 if [ $reponum -eq 0 ]; then
   intersection=$(git --git-dir=${directories[0]} ls-files --other --exclude-standard)
 elif [ $reponum -eq 1 ]; then
-  intersection=$(comm -12 <(git --git-dir=${directories[0]} ls-files --other --exclude-standard) <(git --git-dir=${directories[1]} ls-files --other --exclude-standard))
+  intersection=$(comm -12 <(git --git-dir=${directories[0]} ls-files --other --exclude-standard | sort) <(git --git-dir=${directories[1]} ls-files --other --exclude-standard | sort))
 else
-  intersection=$(comm -12 <(git --git-dir=${directories[0]} ls-files --other --exclude-standard) <(git --git-dir=${directories[1]} ls-files --other --exclude-standard))
+  intersection=$(comm -12 <(git --git-dir=${directories[0]} ls-files --other --exclude-standard | sort) <(git --git-dir=${directories[1]} ls-files --other --exclude-standard | sort))
   for (( i=2; i<${reponum}; i++ ));
   do
-    intersection=$(comm -12<(echo -e "$intersection") <(git --git-dir=${directories[i]} ls-files --other --exclude-standard))
+    intersection=$(comm -12<(echo -e "$intersection" | sort) <(git --git-dir=${directories[i]} ls-files --other --exclude-standard | sort))
   done
 fi
 
