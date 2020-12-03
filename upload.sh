@@ -1,6 +1,5 @@
 #!/bin/bash
 # Create as many directories as you need for the git folders (2 minimum)
-# You'll also want to add these folders to .gitignore
 declare -a directories=(
   ".gitone" 
   ".gittwo" 
@@ -23,6 +22,7 @@ do
       tmp_dir=$(mktemp -d)
       git init $tmp_dir
       mv $tmp_dir/.git ${directories[$i-1]}
+      echo ${directories[$i-1]} >> .gitignore
       git --git-dir=${directories[$i-1]} checkout -b master
       echo -n "Enter a remote for the repository: "
       read answer
