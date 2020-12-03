@@ -1,5 +1,6 @@
 #!/bin/bash
 # Create as many directories as you need for the git folders (2 minimum)
+# You'll also want to add these folders to .gitignore
 declare -a directories=(
   ".gitone" 
   ".gittwo" 
@@ -95,4 +96,8 @@ do
   git --git-dir=$repository add $file
   git --git-dir=$repository commit -m "$file"
   git --git-dir=$repository push -u origin master
+  # If the repository becomes too full restart the script
+  if [ $(du -s $repository | cut -f1) -gt $sizelimit ]; then
+    $(basename $0) && exit
+  fi
 done
