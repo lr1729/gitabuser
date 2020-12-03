@@ -48,11 +48,25 @@ done
 # Check if the last repository is less than the maximum size
 if [ -z "$repository" ]; then
   if [ $(du -s ${directories[${repositories}-1]} | cut -f1) -lt $sizelimit ]; then
-      repository=${directories[${repositories}-1]}
-      break
+    repository=${directories[${repositories}-1]}
+    break
   else
+    # Exit if all repositories are full
     echo "All repositories are full"
     exit 1
   fi
 fi
 echo Saving files to $repository
+
+# Upload modified files for existing repositories
+for (( i=1; i<${repositories}+1; i++ ));
+do
+  temp_file=$(mktemp)
+  for file in $(git ls-files --modified --exclude-standard)
+  do
+    git add $file
+    git commit -m "$file"
+    git push -u origin master
+  done
+done
+
