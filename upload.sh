@@ -34,7 +34,7 @@ for (( i=1; i<${repositories}+1; i++ ));
 do
   # Check if the repository is empty
   if [ $(git --git-dir=${directories[$i-1]} count-objects | cut -d" " -f1) -eq 0 ]; then
-    # If it's the first repository set it as the location to push to
+    # If the first repository is empty set it as the location to push to
     if [ i=1 ]; then
       repository=${directories[$i-1]}
       break
@@ -45,7 +45,7 @@ do
     fi
   fi
 done
-# Check if the last repository is less than the maximum size
+# Use the last repository if it's less than the maximum size and there's no empty repositories
 if [ -z "$repository" ]; then
   if [ $(du -s ${directories[${repositories}-1]} | cut -f1) -lt $sizelimit ]; then
     repository=${directories[${repositories}-1]}
