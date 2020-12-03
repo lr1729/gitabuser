@@ -16,7 +16,7 @@ repositories=${#directories[@]}
 for (( i=1; i<${repositories}+1; i++ ));
 do
   if [ ! -d ${directories[$i-1]} ]; then
-    echo -n "Directory ${directories[$i-1]} DOES NOT exist. Create repository? (Y/n) "
+    echo -n "Directory ${directories[$i-1]} DOES NOT exist. Create repository? (y/n) "
     read answer
     if [ "$answer" != "${answer#[Yy]}" ] ;then
       tmp_dir=$(mktemp -d)
@@ -36,7 +36,7 @@ do
   # Check if the repository is empty
   if [ $(git --git-dir=${directories[$i-1]} count-objects | cut -d" " -f1) -eq 0 ]; then
     # If the first repository is empty set it as the location to push to
-    if [ i=1 ]; then
+    if [ $i -eq 1 ]; then
       repository=${directories[$i-1]}
       reponum=$(($i-1))
       break
@@ -59,10 +59,11 @@ if [ -z "$repository" ]; then
     exit 1
   fi
 fi
-echo Saving new files to $repository
+echo "Current destination for new files is $repository"
 
 # Upload modified/deleted files for existing repositories
-for (( i=1; i<${repositories}+1; i++ ));
+echo "Updating existing repositories"
+for (( i=1; i<${reponum}+1; i++ ));
 do
   temp_file=$(mktemp)
   for file in $(git --git-dir=${directories[$i-1]} ls-files --modified --exclude-standard)
@@ -88,6 +89,7 @@ else
 fi
 
 # Upload the files to the previously determined destination
+echo "Uploading new files to $repository"
 for file in $(echo -e "$intersection")
 do
   git --git-dir=$repository add $file
