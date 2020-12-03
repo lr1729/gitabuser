@@ -53,7 +53,6 @@ if [ -z "$repository" ]; then
   if [ $(du -s ${directories[${repositories}-1]} | cut -f1) -lt $sizelimit ]; then
     repository=${directories[${repositories}-1]}
     reponum=$(($i-1))
-    break
   else
     # Exit if all repositories are full
     echo "All repositories are full"
