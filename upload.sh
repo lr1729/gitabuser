@@ -42,7 +42,7 @@ do
       reponum=$(($i-1))
       break
     # if the previous repository is less than the maximum size set it as the location
-    elif [ $(du -s ${directories[$i-2]} | cut -f1) -lt $sizelimit ]; then
+    elif [ $(du -sb ${directories[$i-2]} | cut -f1) -lt $sizelimit ]; then
       repository=${directories[$i-2]}
       reponum=$(($i-2))
       break
@@ -51,7 +51,7 @@ do
 done
 # Use the last repository if it's less than the maximum size and there's no empty repositories
 if [ -z "$repository" ]; then
-  if [ $(du -s ${directories[${repositories}-1]} | cut -f1) -lt $sizelimit ]; then
+  if [ $(du -sb ${directories[${repositories}-1]} | cut -f1) -lt $sizelimit ]; then
     repository=${directories[${repositories}-1]}
     reponum=$(($i-1))
   else
@@ -97,7 +97,7 @@ do
   git --git-dir=$repository commit -m "$file"
   git --git-dir=$repository push -u origin master
   # If the repository becomes too full restart the script
-  if [ $(du -s $repository | cut -f1) -gt $sizelimit ]; then
+  if [ $(du -sb $repository | cut -f1) -gt $sizelimit ]; then
     $(basename $0) && exit
   fi
 done
