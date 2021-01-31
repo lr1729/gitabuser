@@ -7,7 +7,7 @@ declare -a directories=(
 )
 
 # The size limit of one repository before using another in bytes
-sizelimit=96636714682 # 90GB
+sizelimit=80530595568 # 75GB
 
 # Get number of repositories
 repositories=${#directories[@]}
