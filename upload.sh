@@ -27,6 +27,12 @@ do
       echo -n "Enter a remote for the repository: "
       read answer
       git --git-dir=${directories[$i-1]} remote add origin ${answer}
+      echo -n "Enter your git email: "
+      read answer
+      git --git-dir=${directories[$i-1]} config --global user.email "${answer}"
+      echo -n "Enter your git username: "
+      read answer
+      git --git-dir=${directories[$i-1]} config --global user.name "${answer}"
     fi
   fi
 done
