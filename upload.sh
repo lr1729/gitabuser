@@ -67,7 +67,7 @@ echo "Updating existing repositories"
 for (( i=1; i<${reponum}+1; i++ ));
 do
   temp_file=$(mktemp)
-  for file in $(git --git-dir=${directories[$i-1]} ls-files --modified --exclude-standard)
+  for file in $(git --git-dir=${directories[$i-1]} ls-files --modified --deleted --exclude-standard)
   do
     git --git-dir=${directories[$i-1]} add $file
     git --git-dir=${directories[$i-1]} commit -m "$file"
