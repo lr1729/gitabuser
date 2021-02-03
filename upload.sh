@@ -48,7 +48,7 @@ do
   fi
 done
 
-if [ ! -z "$repository" ]; then
+if [ -z "$repository" ]; then
   # Exit if all repositories are full
   echo "All repositories are full"
   exit 1
