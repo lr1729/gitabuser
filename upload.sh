@@ -40,32 +40,20 @@ done
 # Find repository to upload new files to
 for (( i=1; i<${repositories}+1; i++ ));
 do
-  # Check if the repository is empty
-  if [ $(git --git-dir=${directories[$i-1]} count-objects | cut -d" " -f1) -eq 0 ]; then
-    # If the first repository is empty set it as the location to push to
-    if [ $i -eq 1 ]; then
-      repository=${directories[$i-1]}
-      reponum=$(($i-1))
-      break
-    # if the previous repository is less than the maximum size set it as the location
-    elif [ $(du -sb ${directories[$i-2]} | cut -f1) -lt $sizelimit ]; then
-      repository=${directories[$i-2]}
-      reponum=$(($i-2))
-      break
-    fi
+  # if the repository is less than the maximum size set it as the location
+  if [ $(du -sb ${directories[$i-1]} | cut -f1) -lt $sizelimit ]; then
+    repository=${directories[$i-1]}
+    reponum=$(($i-1))
+    break
   fi
 done
-# Use the last repository if it's less than the maximum size and there's no empty repositories
-if [ -z "$repository" ]; then
-  if [ $(du -sb ${directories[${repositories}-1]} | cut -f1) -lt $sizelimit ]; then
-    repository=${directories[${repositories}-1]}
-    reponum=$(($i-1))
-  else
-    # Exit if all repositories are full
-    echo "All repositories are full"
-    exit 1
-  fi
+
+if [ ! -z "$repository" ]; then
+  # Exit if all repositories are full
+  echo "All repositories are full"
+  exit 1
 fi
+
 echo "Current destination for new files is $repository"
 
 # Upload modified/deleted files for existing repositories
