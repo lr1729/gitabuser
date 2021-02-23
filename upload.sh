@@ -41,7 +41,7 @@ done
 for (( i=1; i<${repositories}+1; i++ ));
 do
   # if the repository is less than the maximum size set it as the location
-  if [ $(du -sb ${directories[$i-1]} | cut -f1) -lt $sizelimit ]; then
+  if [ "$(du -sb ${directories[$i-1]} | cut -f1)" -lt "$sizelimit" ]; then
     repository=${directories[$i-1]}
     reponum=$(($i-1))
     break
@@ -58,9 +58,8 @@ echo "Current destination for new files is $repository"
 
 # Upload modified/deleted files for existing repositories
 echo "Updating existing repositories"
-for (( i=1; i<${reponum}+1; i++ ));
+for (( i=1; i<${reponum}+2; i++ )); 
 do
-  temp_file=$(mktemp)
   for file in $(git --git-dir=${directories[$i-1]} ls-files --modified --deleted --exclude-standard)
   do
     git --git-dir=${directories[$i-1]} add $file
@@ -91,7 +90,7 @@ do
   git --git-dir=$repository commit -m "$file"
   git --git-dir=$repository push -u origin master
   # If the repository becomes too full restart the script
-  if [ $(du -sb $repository | cut -f1) -gt $sizelimit ]; then
+  if [ "$(du -sb $repository | cut -f1)" -gt "$sizelimit" ]; then
     $(basename $0) && exit
   fi
 done
