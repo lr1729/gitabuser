@@ -1,10 +1,6 @@
 # gitsplitter
-Automatically uploads files onto multiple github repositories once one reaches the 100gb limit.
+Splits large folders into multiple <100GB git repositories to upload to Github
 
 Works well in conjunction with https://github.com/borgbackup/borg.
 
-You'll want to add each .git folder to .gitignore
-
-You can get infinite free cloud storage on Github this way.
-
-~~please don't ban me~~
+Github cannot store any files larger that 100mb without [Git LFS](https://git-lfs.github.com/)
